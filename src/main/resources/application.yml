@@ -22,12 +22,12 @@ spring:
 
   jpa:
     hibernate:
-      ddl-auto: create-drop
-    show-sql: true
+      ddl-auto: create
+    show-sql: false
     open-in-view: false
     properties:
       hibernate:
-        format_sql: true
+        format_sql: false
     database-platform: org.hibernate.dialect.H2Dialect
     defer-datasource-initialization: false
 
@@ -39,5 +39,3 @@ jwt:
 logging:
   level:
     com.salary: info
-    org.hibernate.SQL: debug
-    org.hibernate.tool.hbm2ddl: debug

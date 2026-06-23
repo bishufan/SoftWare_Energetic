@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>薪资管理系统</title>
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>💰</text></svg>">
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <!-- Login Page -->
+    <div id="loginPage" class="login-page">
+        <div class="login-container">
+            <div class="login-header">
+                <div class="login-icon">💰</div>
+                <h1>薪资管理系统</h1>
+                <p>企业薪酬管理一体化平台</p>
+            </div>
+            <form id="loginForm" class="login-form" onsubmit="return handleLogin(event)">
+                <div class="form-group">
+                    <label>用户名</label>
+                    <input type="text" id="username" placeholder="请输入用户名" required>
+                </div>
+                <div class="form-group">
+                    <label>密码</label>
+                    <input type="password" id="password" placeholder="请输入密码" required>
+                </div>
+                <button type="submit" class="btn btn-primary btn-block">登 录</button>
+                <div id="loginError" class="login-error"></div>
+            </form>
+            <div class="login-footer">
+                <p>预置账号：admin/admin123 | finance/finance123 | hr/hr123</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Application -->
+    <div id="app" class="app-container" style="display:none;">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <div class="sidebar-logo">💰</div>
+                <span class="sidebar-title">薪资管理系统</span>
+            </div>
+            <nav class="sidebar-nav">
+                <div class="nav-section">
+                    <div class="nav-section-title">基础数据</div>
+                    <a href="#" class="nav-item active" data-page="dashboard">
+                        <span class="nav-icon">📊</span> 工作台
+                    </a>
+                    <a href="#" class="nav-item" data-page="departments">
+                        <span class="nav-icon">🏢</span> 部门管理
+                    </a>
+                    <a href="#" class="nav-item" data-page="employees">
+                        <span class="nav-icon">👥</span> 员工管理
+                    </a>
+                    <a href="#" class="nav-item" data-page="salary-items">
+                        <span class="nav-icon">📋</span> 工资项目
+                    </a>
+                </div>
+                <div class="nav-section">
+                    <div class="nav-section-title">工资核算</div>
+                    <a href="#" class="nav-item" data-page="payroll">
+                        <span class="nav-icon">🧮</span> 工资计算
+                    </a>
+                    <a href="#" class="nav-item" data-page="payslips">
+                        <span class="nav-icon">📄</span> 工资条
+                    </a>
+                </div>
+                <div class="nav-section">
+                    <div class="nav-section-title">统计报表</div>
+                    <a href="#" class="nav-item" data-page="reports">
+                        <span class="nav-icon">📈</span> 报表分析
+                    </a>
+                </div>
+                <div class="nav-section">
+                    <div class="nav-section-title">系统管理</div>
+                    <a href="#" class="nav-item" data-page="system">
+                        <span class="nav-icon">⚙️</span> 系统设置
+                    </a>
+                </div>
+            </nav>
+            <div class="sidebar-footer">
+                <div class="user-info">
+                    <div class="user-avatar" id="userAvatar">A</div>
+                    <div>
+                        <div class="user-name" id="userName">管理员</div>
+                        <div class="user-role" id="userRole">ADMIN</div>
+                    </div>
+                </div>
+                <button class="btn-logout" onclick="handleLogout()">退出登录</button>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <header class="topbar">
+                <h2 id="pageTitle">工作台</h2>
+                <div class="topbar-info">
+                    <span id="currentTime"></span>
+                </div>
+            </header>
+            <div class="content-wrapper" id="pageContent">
+                <!-- Pages will be loaded here -->
+            </div>
+        </main>
+    </div>
+
+    <script src="js/api.js"></script>
+    <script src="js/app.js"></script>
+</body>
+</html>
