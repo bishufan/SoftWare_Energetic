@@ -1,0 +1,18 @@
+@startuml
+skinparam backgroundColor #F9FAFB
+skinparam defaultFontSize 11
+class PayrollController as "PayrollController\n工资核算控制" #EEF2FF {
+  - calculationService: SalaryCalculationService
+  - excelService: ExcelService
+  - logService: OperationLogService
+  ..
+  + calculate(req, httpReq): ApiResponse<List<SalaryRecord>>
+  + getRecords(yearMonth, deptId): ApiResponse<List<SalaryRecord>>
+  + getEmployeeRecords(empId): ApiResponse<List<SalaryRecord>>
+  + getEmployeeMonthRecord(empId, ym): ApiResponse<SalaryRecord>
+  + confirm(id, req): ApiResponse
+  + importData(file, req): ApiResponse
+  + export(yearMonth, deptId, req): ResponseEntity<byte[]>
+}
+note right of PayrollController : POST /api/payroll/calculate  hasRole('FINANCE')\nGET /api/payroll/records\nPOST /api/payroll/import Excel导入\nGET /api/payroll/export Excel导出
+@enduml

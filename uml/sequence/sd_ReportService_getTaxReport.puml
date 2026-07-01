@@ -1,0 +1,30 @@
+@startuml sd_ReportService_getTaxReport
+skinparam backgroundColor #F9FAFB
+title ReportService.getTaxReport(yearMonth) - 个税申报表
+
+actor "调用方" as Client
+participant "ReportController" as Ctrl
+participant "ReportService" as RptSvc
+participant "SalaryRecordRepository" as RecRepo
+participant "Employee\n(实体)" as Emp
+
+Client -> Ctrl: GET /api/reports/tax-report?yearMonth=202403
+Ctrl -> RptSvc: getTaxReport(yearMonth)
+RptSvc -> RecRepo: findByYearMonth(yearMonth)
+RecRepo --> RptSvc: List<SalaryRecord>
+note right of RptSvc #F0F8FF
+  **构建申报行(stream):**
+  每个记录 → LinkedHashMap:
+  "姓名" → employee.name
+  "身份证号" → employee.idCard
+  "工资号" → employee.employeeNo
+  "累计收入" → cumulativeIncome
+  "累计专项扣除" → cumulativeDeduction
+  "累计已缴税额" → cumulativeTaxPaid
+  "本月应纳税额" → incomeTax
+  "实发工资" → netPay
+end note
+RptSvc --> Ctrl: List<Map<String, Object>>
+Ctrl --> Client: ApiResponse → JSON\n[ {姓名, 身份证号, 累计收入, ...} ]
+
+@enduml

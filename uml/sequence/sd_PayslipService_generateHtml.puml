@@ -1,0 +1,36 @@
+@startuml sd_PayslipService_generateHtml
+skinparam backgroundColor #F9FAFB
+title PayslipService.generateHtml(recordId) - 生成HTML工资条预览
+
+actor "调用方" as Client
+participant "PayslipController" as Ctrl
+participant "PayslipService" as PSlipSvc
+participant "SalaryRecordRepository" as RecRepo
+participant "SalaryItemRepository" as ItemRepo
+participant "ObjectMapper" as OM
+
+Client -> Ctrl: GET /api/payslips/{id}/html
+Ctrl -> PSlipSvc: generateHtml(recordId)
+PSlipSvc -> RecRepo: findById(recordId)
+RecRepo --> PSlipSvc: SalaryRecord
+PSlipSvc -> OM: readValue(itemValues, Map)
+OM --> PSlipSvc: Map<String, Double>
+PSlipSvc -> ItemRepo: findByActiveTrueOrderBySortOrder()
+ItemRepo --> PSlipSvc: List<SalaryItem> → codeNameMap
+note right of PSlipSvc #F0F8FF
+  **构建HTML字符串:**
+  <html>
+    <h2>工资条</h2>
+    <table> 员工信息 </table>
+    <table border=1>
+      <tr> 项目 | 金额 </tr>
+      loop明细...
+      <tr> 应发合计 </tr>
+      <tr> 个税 / 社保/ 公积金 </tr>
+      <tr style=red> 实发合计 </tr>
+    </table>
+  </html>
+end note
+PSlipSvc --> Ctrl: String (完整HTML代码)
+Ctrl --> Client: ApiResponse<String>\n(前端直接innerHTML渲染)
+@enduml

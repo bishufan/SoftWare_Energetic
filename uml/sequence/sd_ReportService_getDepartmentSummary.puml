@@ -1,0 +1,42 @@
+@startuml sd_ReportService_getDepartmentSummary
+skinparam backgroundColor #F9FAFB
+title ReportService.getDepartmentSummary(yearMonth) - 部门工资汇总报表
+
+actor "调用方" as Client
+participant "ReportController" as Ctrl
+participant "ReportService" as RptSvc
+participant "DepartmentRepository" as DeptRepo
+participant "SalaryRecordRepository" as RecRepo
+participant "Department\n(实体)" as Dept
+participant "Employee\n(实体)" as Emp
+participant "DeptSalarySummary\n(DTO)" as DTO
+
+Client -> Ctrl: GET /api/reports/department-summary?yearMonth=202403
+Ctrl -> RptSvc: getDepartmentSummary(yearMonth)
+RptSvc -> DeptRepo: findByActiveTrue()
+DeptRepo --> RptSvc: List<Department>
+RptSvc -> RecRepo: findByYearMonth(yearMonth)
+RecRepo --> RptSvc: List<SalaryRecord>
+note right of RptSvc #F0F8FF
+  **分组汇总:**
+  stream().collect(
+    groupingBy(
+      r→r.employee.department.id
+    )
+  )
+end note
+loop 每个部门
+  DTO -> DTO: new DeptSalarySummary(deptId, deptName)
+  note right of DTO #F0F8FF
+  **汇总指标:**
+  - 人数(count)
+  - 应发合计(sum grossPay)
+  - 个税合计(sum incomeTax)
+  - 社保合计(sum socialInsurance)
+  - 公积金合计(sum housingFund)
+  - 实发合计(sum netPay)
+  end note
+end
+RptSvc --> Ctrl: List<DeptSalarySummary>
+Ctrl --> Client: ApiResponse → JSON\n[ {部门名, 人数, 应发合计, 实发合计, ...} ]
+@enduml

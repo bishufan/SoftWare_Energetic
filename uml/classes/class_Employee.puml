@@ -1,0 +1,26 @@
+@startuml
+skinparam backgroundColor #F9FAFB
+skinparam defaultFontSize 10
+class Employee as "Employee\n员工" #FCE7F3 {
+  - id: Long
+  - employeeNo: String
+  - name: String
+  - idCard: String
+  - phone: String
+  - email: String
+  - department: Department
+  - position: String
+  - hireDate: LocalDate
+  - resignDate: LocalDate
+  - active: Boolean
+  - socialSecurityBase: Double
+  - housingFundBase: Double
+  - socialSecurityCity: String
+  - createTime: LocalDateTime
+  - updateTime: LocalDateTime
+  ..
+  + onCreate(): void
+  + onUpdate(): void
+}
+note right of Employee : PK, AUTO_INCREMENT, 表: sys_employee\nemployeeNo: length=50, NOT NULL\nname: length=50, NOT NULL\ndepartment: FK→Department.id\nactive: default=true\nsocialSecurityBase/HousingFundBase: ≥ 0
+@enduml

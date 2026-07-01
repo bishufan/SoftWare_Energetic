@@ -1,0 +1,63 @@
+@startuml sd_DataInitializer_run
+skinparam backgroundColor #F9FAFB
+title DataInitializer.run(args) - 系统启动数据初始化
+
+actor "Spring Boot" as SB
+participant "DataInitializer" as Init
+participant "UserRepository" as UsrRepo
+participant "DepartmentRepository" as DeptRepo
+participant "EmployeeRepository" as EmpRepo
+participant "SalaryItemRepository" as ItemRepo
+participant "SocialSecurityConfig\nRepository" as SsRepo
+participant "TaxConfigRepository" as TaxRepo
+participant "PasswordEncoder" as Encoder
+
+SB -> Init: run(args)
+note right of Init : CommandLineRunner接口\n应用启动后自动执行
+Init -> UsrRepo: count()
+UsrRepo --> Init: 0 (首次启动)
+alt 数据库已初始化(count>0)
+  Init --> SB: 跳过初始化
+else 首次启动
+  note right of Init #F0F8FF
+    **Step 1: 初始化用户(4个)**
+    admin/finance/hr/employee
+    密码BCrypt加密
+  end note
+  Init -> Encoder: encode("admin123")
+  Encoder --> Init: $2a$10$...
+  Init -> UsrRepo: save(adminUser + 3 other)
+  note right of Init #F0F8FF
+    **Step 2: 初始化部门(5个)**
+    技术部→前端组+后端组
+    销售部/财务部/人事部
+  end note
+  Init -> DeptRepo: saveAll(departments)
+  note right of Init #F0F8FF
+    **Step 3: 初始化员工(4人)**
+    张三/李四(技术部-北京)
+    王五(销售部-上海)
+    赵六(财务部-北京)
+  end note
+  Init -> EmpRepo: saveAll(employees)
+  note right of Init #F0F8FF
+    **Step 4: 初始化工资项目(14个)**
+    基本工资/年功/效益/岗位/补贴...
+    含公式项目: 应发合计/个税/实发合计
+  end note
+  Init -> ItemRepo: saveAll(salaryItems)
+  note right of Init #F0F8FF
+    **Step 5: 初始化社保费率**
+    北京+上海 6险种
+    个人+单位比例
+  end note
+  Init -> SsRepo: saveAll(configs)
+  note right of Init #F0F8FF
+    **Step 6: 初始化个税税率**
+    7级累进: 3%~45%
+    含速算扣除数
+  end note
+  Init -> TaxRepo: saveAll(taxConfigs)
+end
+Init --> SB: 初始化完成
+@enduml

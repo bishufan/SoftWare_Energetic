@@ -1,0 +1,12 @@
+@startuml
+skinparam backgroundColor #F9FAFB
+skinparam defaultFontSize 12
+class ExcelService as "ExcelService\nExcel导入导出服务" #ECFDF5 {
+  - salaryItemRepository: SalaryItemRepository
+  ..
+  + importVariableData(file): Map<String, Map<Long, Double>>
+  + exportToExcel(records): byte[]
+  + exportTaxReportToExcel(taxData): byte[]
+}
+note right of ExcelService : import: Excel→{工号:{项目ID:值}}  Apache POI\nexport: 工资明细→Excel\nexportTax: 个税申报→Excel
+@enduml

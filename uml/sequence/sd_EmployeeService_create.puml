@@ -1,0 +1,19 @@
+@startuml sd_EmployeeService_create
+skinparam backgroundColor #F9FAFB
+title EmployeeService.create(employee) - 创建员工
+
+actor "调用方" as Client
+participant "EmployeeController" as Ctrl
+participant "EmployeeService" as Service
+participant "EmployeeRepository" as Repo
+participant "Employee\n(实体)" as Entity
+
+Client -> Ctrl: POST /api/employees\n{name, employeeNo, hireDate, ...}
+Ctrl -> Service: create(employee)
+note right of Service : @Transactional
+Service -> Repo: save(employee)
+Repo --> Service: 持久化后的Employee\n(含ID)
+Service --> Ctrl: Employee
+note right of Entity : JPA自动生成ID\n关联department\n关联自动生成时间戳
+Ctrl --> Client: ApiResponse<Employee>
+@enduml

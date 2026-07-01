@@ -1,0 +1,55 @@
+@startuml sd_PayslipService_generatePdf
+skinparam backgroundColor #F9FAFB
+title PayslipService.generatePdf(recordId) - 生成PDF工资条
+
+actor "调用方" as Client
+participant "PayslipController" as Ctrl
+participant "PayslipService" as PSlipSvc
+participant "SalaryRecordRepository" as RecRepo
+participant "SalaryItemRepository" as ItemRepo
+participant "SalaryRecord\n(实体)" as Rec
+participant "ObjectMapper" as OM
+participant "PdfDocument" as PDF
+participant "Table" as Tbl
+
+Client -> Ctrl: GET /api/payslips/{id}/pdf
+Ctrl -> PSlipSvc: generatePdf(recordId)
+PSlipSvc -> RecRepo: findById(recordId)
+alt 不存在
+  RecRepo --> PSlipSvc: throw RuntimeException
+  PSlipSvc --> Ctrl: 404错误
+else 存在
+  RecRepo --> PSlipSvc: SalaryRecord
+  note right of PSlipSvc #F0F8FF
+    **PDF构建:**
+    1. 创建ByteArrayOutputStream
+    2. PdfWriter + PdfDocument
+    3. Document对象
+  end note
+  PSlipSvc -> PSlipSvc: PdfWriter(bos) → PdfDocument → Document
+  PSlipSvc -> PDF: add("工资条" 标题)
+  PSlipSvc -> PDF: add(姓名/工资号/部门/月份)
+  PSlipSvc -> OM: readValue(itemValues, Map)
+  OM --> PSlipSvc: Map<String, Double>
+  PSlipSvc -> ItemRepo: findByActiveTrueOrderBySortOrder()
+  ItemRepo --> PSlipSvc: List<SalaryItem>
+  note right of PSlipSvc #F0F8FF
+    **构建表格(2列):**
+    项目 | 金额
+    基本工资 | 5000.00
+    养老保险 | -400.00
+    ...
+    应发合计 | 8000.00
+    个税 | -90.00
+    实发合计(红色) | 6900.00
+  end note
+  PSlipSvc -> Tbl: new Table(2)
+  PSlipSvc -> Tbl: addHeaderCell("项目"), addHeaderCell("金额(元)")
+  loop 每个工资项明细
+    PSlipSvc -> Tbl: addCell(项目名), addCell(金额)
+  end
+  PSlipSvc -> PDF: add(table), close()
+  PSlipSvc --> Ctrl: byte[] (PDF二进制)
+  Ctrl --> Client: PDF文件下载\nContent-Type: application/pdf
+end
+@enduml

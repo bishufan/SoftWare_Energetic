@@ -1,0 +1,16 @@
+@startuml
+skinparam backgroundColor #F9FAFB
+skinparam defaultFontSize 12
+class OperationLog as "OperationLog\n操作日志" #FCE7F3 {
+  - id: Long
+  - username: String
+  - operation: String
+  - detail: String
+  - ipAddress: String
+  - result: String
+  - createTime: LocalDateTime
+  ..
+  + onCreate(): void
+}
+note right of OperationLog : PK, 表: sys_operation_log\nusername: length=50, NOT NULL\nresult: SUCCESS/FAILED\ncreateTime: updatable=false
+@enduml

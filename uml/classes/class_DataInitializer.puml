@@ -1,0 +1,22 @@
+@startuml
+skinparam backgroundColor #F9FAFB
+skinparam defaultFontSize 11
+class DataInitializer as "DataInitializer\n数据初始化器" #ECFDF5 {
+  - userRepository: UserRepository
+  - departmentRepository: DepartmentRepository
+  - employeeRepository: EmployeeRepository
+  - socialSecurityRepository: SocialSecurityConfigRepository
+  - taxConfigRepository: TaxConfigRepository
+  - salaryItemRepository: SalaryItemRepository
+  - passwordEncoder: PasswordEncoder
+  ..
+  + run(args): void
+  - initUsers(): void
+  - initDepartments(): List<Department>
+  - initEmployees(departments): void
+  - initSalaryItems(): void
+  - initSocialSecurity(): void
+  - initTaxConfig(): void
+}
+note right of DataInitializer : CommandLineRunner\n预置: admin/finance/hr/employee用户\n部门: 技术部/销售部/财务部/人事部\n14个工资项+北京上海社保+7级个税
+@enduml

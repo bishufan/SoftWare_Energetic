@@ -1,0 +1,11 @@
+@startuml
+skinparam backgroundColor #F9FAFB
+skinparam defaultFontSize 12
+class OperationLogService as "OperationLogService\n日志服务" #ECFDF5 {
+  - logRepository: OperationLogRepository
+  ..
+  + getLogs(pageable): Page<OperationLog>
+  + log(username, operation, detail, ipAddress, success): void
+}
+note right of OperationLogService : getLogs: 按时间降序分页\nlog: 记录操作日志入库
+@enduml

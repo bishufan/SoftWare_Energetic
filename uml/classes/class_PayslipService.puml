@@ -1,0 +1,13 @@
+@startuml
+skinparam backgroundColor #F9FAFB
+skinparam defaultFontSize 12
+class PayslipService as "PayslipService\n工资条服务" #ECFDF5 {
+  - recordRepository: SalaryRecordRepository
+  - salaryItemRepository: SalaryItemRepository
+  - objectMapper: ObjectMapper
+  ..
+  + generatePdf(recordId): byte[]
+  + generateHtml(recordId): String
+}
+note right of PayslipService : generatePdf: iText 7 PDF\ngenerateHtml: 浏览器预览
+@enduml

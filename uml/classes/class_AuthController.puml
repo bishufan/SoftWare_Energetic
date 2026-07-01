@@ -1,0 +1,13 @@
+@startuml
+skinparam backgroundColor #F9FAFB
+skinparam defaultFontSize 12
+class AuthController as "AuthController\n认证控制" #EEF2FF {
+  - userRepository: UserRepository
+  - passwordEncoder: PasswordEncoder
+  - jwtUtil: JwtUtil
+  ..
+  + login(request): ApiResponse
+  + register(request): ApiResponse
+}
+note right of AuthController : POST /api/auth/login  permitAll()\n返回JWT token+用户信息\n\nPOST /api/auth/register\n创建新用户
+@enduml

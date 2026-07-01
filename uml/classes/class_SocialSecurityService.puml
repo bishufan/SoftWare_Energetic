@@ -1,0 +1,10 @@
+@startuml
+skinparam backgroundColor #F9FAFB
+skinparam defaultFontSize 12
+class SocialSecurityService as "SocialSecurityService\n社保服务" #ECFDF5 {
+  - configRepository: SocialSecurityConfigRepository
+  ..
+  + calculate(employee, yearMonth): Map<String, Double>
+}
+note right of SocialSecurityService : 按城市+年份获取费率\nclamp(基数, 下限, 上限) × 比例\n返回 Map<险种, 金额>
+@enduml

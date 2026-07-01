@@ -1,0 +1,15 @@
+@startuml
+skinparam backgroundColor #F9FAFB
+skinparam defaultFontSize 12
+class EmployeeController as "EmployeeController\n员工控制" #EEF2FF {
+  - employeeService: EmployeeService
+  ..
+  + getAll(page, size, keyword, deptId): ApiResponse<Page>
+  + getAllActive(): ApiResponse<List<Employee>>
+  + getById(id): ApiResponse<Employee>
+  + create(employee): ApiResponse<Employee>
+  + update(id, employee): ApiResponse<Employee>
+  + delete(id): ApiResponse
+}
+note right of EmployeeController : GET /api/employees 多条件分页\nGET /api/employees/all\nDELETE: 逻辑删除
+@enduml

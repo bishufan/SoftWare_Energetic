@@ -1,0 +1,176 @@
+@startuml domain_model
+skinparam backgroundColor #F9FAFB
+skinparam defaultFontSize 12
+skinparam class {
+  BorderThickness 2
+  FontSize 12
+  FontStyle bold
+}
+
+' === Entity Classes ===
+class Department as "Department\n部门" #FCE7F3 {
+  + id: Long
+  + name: String
+  + code: String
+  + active: Boolean
+  + sortOrder: Integer
+}
+
+class Employee as "Employee\n员工" #FCE7F3 {
+  + id: Long
+  + employeeNo: String
+  + name: String
+  + idCard: String
+  + phone: String
+  + email: String
+  + position: String
+  + hireDate: LocalDate
+  + resignDate: LocalDate
+  + active: Boolean
+  + socialSecurityBase: Double
+  + housingFundBase: Double
+  + socialSecurityCity: String
+}
+
+class User as "User\n系统用户" #FCE7F3 {
+  + id: Long
+  + username: String
+  + password: String
+  + realName: String
+  + email: String
+  + role: String
+  + active: Boolean
+}
+
+class SalaryItem as "SalaryItem\n工资项目" #FCE7F3 {
+  + id: Long
+  + name: String
+  + code: String
+  + itemType: String
+  + formula: String
+  + builtIn: Boolean
+  + sortOrder: Integer
+  + active: Boolean
+}
+
+class SalaryRecord as "SalaryRecord\n工资记录" #FCE7F3 {
+  + id: Long
+  + yearMonth: String
+  + itemValues: String
+  + grossPay: Double
+  + incomeTax: Double
+  + socialInsurance: Double
+  + housingFund: Double
+  + netPay: Double
+  + cumulativeIncome: Double
+  + cumulativeExempt: Double
+  + cumulativeDeduction: Double
+  + cumulativeTaxPaid: Double
+  + status: String
+  + processTime: LocalDateTime
+}
+
+class SocialSecurityConfig as "SocialSecurityConfig\n社保配置" #FCE7F3 {
+  + id: Long
+  + city: String
+  + insuranceType: String
+  + personalRate: Double
+  + companyRate: Double
+  + baseLower: Double
+  + baseUpper: Double
+  + active: Boolean
+  + taxYear: Integer
+}
+
+class TaxConfig as "TaxConfig\n个税税率" #FCE7F3 {
+  + id: Long
+  + taxLevel: Integer
+  + minIncome: Double
+  + maxIncome: Double
+  + taxRate: Double
+  + quickDeduction: Double
+  + taxYear: Integer
+  + active: Boolean
+}
+
+class OperationLog as "OperationLog\n操作日志" #FCE7F3 {
+  + id: Long
+  + username: String
+  + operation: String
+  + detail: String
+  + ipAddress: String
+  + result: String
+  + createTime: LocalDateTime
+}
+
+' === Entity Relationships ===
+
+' Department: 自关联 (树形结构)
+Department *--> "0..*" Department : 包含子部门 children
+Department --> "0..1" Department : 归属上级 parent
+
+' Employee → Department (多对一)
+Employee *--> "1" Department : 所属部门 department >
+
+' User → Employee (多对一)
+User o--> "0..1" Employee : 关联员工 employee >
+
+' SalaryRecord → Employee / User (多对一)
+SalaryRecord *--> "1" Employee : 所属员工 employee >
+SalaryRecord o--> "0..1" User : 处理人 processedBy >
+
+' === Constraints Annotation ===
+note top of Department
+  [约束]
+  name NOT NULL
+  active = true (default)
+  parent_id ≠ self
+  no circular reference
+end note
+
+note top of Employee
+  [约束]
+  employeeNo NOT NULL
+  name NOT NULL
+  hireDate NOT NULL
+  active = true (default)
+  socialSecurityBase ≥ 0
+end note
+
+note right of User
+  [约束]
+  username UNIQUE NOT NULL
+  password NOT NULL
+  role ∈ {ADMIN, FINANCE, HR, EMPLOYEE}
+end note
+
+note right of SalaryItem
+  [约束]
+  name NOT NULL
+  itemType ∈ {EARNING, DEDUCTION,
+             TAX, SOCIAL, FUND, NET}
+end note
+
+note bottom of SalaryRecord
+  [约束]
+  yearMonth = yyyyMM
+  employee NOT NULL
+  status ∈ {DRAFT, CONFIRMED, PAID}
+end note
+
+note bottom of SocialSecurityConfig
+  [约束]
+  insuranceType ∈ {ENDOWMENT,
+    MEDICAL, UNEMPLOYMENT,
+    INJURY, MATERNITY, HOUSING_FUND}
+end note
+
+note bottom of TaxConfig
+  [约束]
+  taxLevel NOT NULL
+  taxRate NOT NULL
+  maxIncome > minIncome
+  OR maxIncome IS NULL
+end note
+
+@enduml

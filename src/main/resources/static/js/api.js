@@ -16,13 +16,28 @@ const API = {
         if (body) opts.body = JSON.stringify(body);
         try {
             const res = await fetch(this._base + path, opts);
-            const data = await res.json();
-            if (!data.success && data.message) {
-                if (data.message.includes('未授权') || data.message.includes('无效')) {
-                    handleLogout();
+            // 尝试解析 JSON，失败则构建错误响应
+            try {
+                const data = await res.json();
+                if (!data.success && data.message) {
+                    if (data.message.includes('重新登录') || data.message.includes('过期') || data.message.includes('未登录')) {
+                        this.clearToken();
+                        if (typeof handleLogout === 'function') handleLogout();
+                    }
                 }
+                return data;
+            } catch (jsonError) {
+                // 非 JSON 响应（如 Spring Security 默认错误页面）
+                if (res.status === 403) {
+                    return { success: false, message: '权限不足，需要管理员或财务角色', data: null };
+                }
+                if (res.status === 401) {
+                    this.clearToken();
+                    if (typeof handleLogout === 'function') handleLogout();
+                    return { success: false, message: '未登录或登录已过期', data: null };
+                }
+                return { success: false, message: '服务器错误 (HTTP ' + res.status + ')', data: null };
             }
-            return data;
         } catch (e) {
             return { success: false, message: '网络错误: ' + e.message, data: null };
         }

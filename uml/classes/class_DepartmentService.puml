@@ -1,0 +1,15 @@
+@startuml
+skinparam backgroundColor #F9FAFB
+skinparam defaultFontSize 12
+class DepartmentService as "DepartmentService\n部门服务" #ECFDF5 {
+  - departmentRepository: DepartmentRepository
+  ..
+  + getTree(): List<Department>
+  + getActive(): List<Department>
+  + getById(id): Department
+  + create(department): Department
+  + update(id, dto): Department
+  + delete(id): void
+}
+note right of DepartmentService : getTree: 获取部门树\ndelete: 逻辑删除(active=false)
+@enduml

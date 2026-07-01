@@ -1,0 +1,9 @@
+@startuml
+skinparam backgroundColor #F9FAFB
+skinparam defaultFontSize 12
+class IndexController as "IndexController\n首页控制" #EEF2FF {
+  ..
+  + index(): String
+}
+note right of IndexController : GET /  permitAll()\n→ forward:/index.html  SPA入口
+@enduml

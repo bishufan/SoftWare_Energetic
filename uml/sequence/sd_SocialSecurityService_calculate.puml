@@ -1,0 +1,40 @@
+@startuml sd_SocialSecurityService_calculate
+skinparam backgroundColor #F9FAFB
+title SocialSecurityService.calculate(employee, yearMonth) - 社保公积金计算
+
+actor "调用方" as Client
+participant "SalaryCalculationService" as CalcSvc
+participant "SocialSecurityService" as SSvc
+participant "SocialSecurityConfigRepository" as CfgRepo
+participant "SocialSecurityConfig\n(实体)" as Cfg
+
+Client -> CalcSvc: calculateAll(yearMonth, trialRun, username)
+CalcSvc -> SSvc: calculate(employee, yearMonth)
+SSvc -> SSvc: 提取year=2024, city="北京"
+SSvc -> CfgRepo: findByCityAndYearAndActiveTrue("北京", 2024)
+alt 无城市配置
+  CfgRepo --> SSvc: empty
+  SSvc -> CfgRepo: findByYearAndActiveTrue(2024)
+  alt 仍无配置
+    SSvc -> SSvc: getDefaultConfigs()\n默认费率
+  end
+end
+alt 有配置
+  CfgRepo --> SSvc: List<SocialSecurityConfig>
+end
+note right of SSvc #F0F8FF
+  **逐险种计算(循环):**
+  养老: base × 8%
+  医疗: base × 2%
+  失业: base × 0.5%
+  工伤: 个人0%
+  生育: 个人0%
+  公积金: base × 7%
+  ---------------------------------
+  base = clamp(基数, 下限, 上限)
+  社保合计 = 养老+医疗+失业(+工伤+生育)
+  公积金合计 = base × 公积金比例
+end note
+SSvc --> CalcSvc: Map<String, Double>\n{ "socialInsurance": 880.00,\n  "housingFund": 700.00 }
+CalcSvc --> Client: 存入SalaryRecord
+@enduml

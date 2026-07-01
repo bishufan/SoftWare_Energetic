@@ -1,0 +1,21 @@
+@startuml
+skinparam backgroundColor #F9FAFB
+skinparam defaultFontSize 11
+class SystemController as "SystemController\n系统管理控制" #EEF2FF {
+  - userRepository: UserRepository
+  - passwordEncoder: PasswordEncoder
+  - socialSecurityRepository: SocialSecurityConfigRepository
+  - taxConfigRepository: TaxConfigRepository
+  - logService: OperationLogService
+  ..
+  + getUsers(): ApiResponse<List<User>>
+  + createUser(user, req): ApiResponse<User>
+  + updateUser(id, dto, req): ApiResponse<User>
+  + deleteUser(id, req): ApiResponse
+  + getSocialSecurity(city, year): ApiResponse
+  + createSocialSecurity(config, req): ApiResponse
+  + updateSocialSecurity(id, dto, req): ApiResponse
+  + getLogs(page, size): ApiResponse<Page>
+}
+note right of SystemController : GET /api/system/users hasRole('ADMIN')\nGET /api/system/social-security\nGET /api/system/logs hasRole('ADMIN')
+@enduml

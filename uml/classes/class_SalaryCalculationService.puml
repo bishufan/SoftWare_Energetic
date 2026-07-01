@@ -1,0 +1,19 @@
+@startuml
+skinparam backgroundColor #F9FAFB
+skinparam defaultFontSize 11
+class SalaryCalculationService as "SalaryCalculationService\n★核心:工资计算服务" #ECFDF5 {
+  - recordRepository: SalaryRecordRepository
+  - salaryItemRepository: SalaryItemRepository
+  - employeeRepository: EmployeeRepository
+  - userRepository: UserRepository
+  - taxService: TaxService
+  - socialSecurityService: SocialSecurityService
+  - objectMapper: ObjectMapper
+  ..
+  + calculateAll(yearMonth, trialRun, username): List<SalaryRecord>
+  + getRecords(yearMonth, deptId): List<SalaryRecord>
+  + getEmployeeRecords(empId): List<SalaryRecord>
+  + getEmployeeMonthRecord(empId, ym): SalaryRecord
+}
+note right of SalaryCalculationService : 核心方法 calculateAll:\n1.获取员工 2.获取工资项\n3.计算社保 4.计算个税\n5.保存记录 @Transactional\n\n依赖TaxService(个税)\n依赖SocialSecurityService(社保)
+@enduml

@@ -1,0 +1,105 @@
+@startuml infrastructure_dto
+skinparam backgroundColor #F9FAFB
+skinparam defaultFontSize 12
+skinparam class {
+  BorderThickness 2
+  FontSize 11
+}
+
+' === Infrastructure ===
+
+class JwtUtil as "JwtUtil\nJWT令牌工具" #EDE9FE {
+  - key: SecretKey
+  - expiration: long
+  ..
+  + generateToken(username, role): String
+  + getUsernameFromToken(token): String
+  + getRoleFromToken(token): String
+  + validateToken(token): boolean
+}
+
+class JwtAuthFilter as "JwtAuthFilter\nJWT认证过滤器" #EDE9FE {
+  - jwtUtil: JwtUtil
+  ..
+  + doFilterInternal(req, resp, filterChain)
+  - extractToken(req): String
+}
+note right of JwtAuthFilter : extends OncePerRequestFilter\n从Authorization头提取JWT\n验证通过后设置SecurityContext
+
+class SecurityConfig as "SecurityConfig\n安全配置" #EDE9FE {
+  - jwtAuthFilter: JwtAuthFilter
+  ..
+  + filterChain(HttpSecurity): SecurityFilterChain
+  + passwordEncoder(): PasswordEncoder
+  + authenticationManager(): AuthenticationManager
+}
+note bottom of SecurityConfig : @EnableWebSecurity\n@EnableMethodSecurity\n无状态会话(STATELESS)
+
+class CorsConfig as "CorsConfig\n跨域配置" #EDE9FE {
+  + corsFilter(): CorsFilter
+}
+
+class GlobalExceptionHandler as "GlobalExceptionHandler\n全局异常处理" #EDE9FE {
+  + handleValidation(MethodArgumentNotValidException)
+  + handleAuth(AccessDeniedException)
+  + handleRuntime(RuntimeException)
+  + handleException(Exception)
+}
+note right of GlobalExceptionHandler : @ControllerAdvice\n统一返回 ApiResponse.fail()
+
+' === DTO ===
+
+class LoginRequest as "LoginRequest\n登录请求" #F5F3FF {
+  + username: String @NotBlank
+  + password: String @NotBlank
+}
+
+class ApiResponse as "ApiResponse<T>\n统一响应" #F5F3FF {
+  + success: boolean
+  + message: String
+  + data: T
+  ..
+  + ok(data): ApiResponse<T>
+  + ok(msg, data): ApiResponse<T>
+  + fail(msg): ApiResponse<T>
+}
+
+class SalaryCalculationRequest as "SalaryRequest\n计算请求" #F5F3FF {
+  + yearMonth: String
+  + trialRun: boolean
+  + variableValues: Map<Long, Double>
+}
+
+class DeptSalarySummary as "DeptSummary\n部门汇总" #F5F3FF {
+  + departmentId: Long
+  + departmentName: String
+  + employeeCount: int
+  + grossPay: Double
+  + totalTax: Double
+  + totalSocial: Double
+  + totalFund: Double
+  + netPay: Double
+}
+
+class YearlyComparisonDto as "YearlyComp\n年度对比" #F5F3FF {
+  + departmentName: String
+  + month: String
+  + grossPay: Double
+  + netPay: Double
+}
+
+' === Relationships ===
+JwtAuthFilter *--> JwtUtil : 注入使用 >
+SecurityConfig *--> JwtAuthFilter : 注入注册 >
+
+' === Auth flow ===
+note top of JwtUtil : 输入: secret(256bit)\n算法: HMAC-SHA256\n格式: JWS compact
+
+note bottom of ApiResponse
+  统一返回格式:
+  { success: true/false,
+    message: "操作成功/失败描述",
+    data: T }
+end note
+
+@enduml

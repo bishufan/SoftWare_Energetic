@@ -1,0 +1,25 @@
+@startuml sd_DepartmentService_update
+skinparam backgroundColor #F9FAFB
+title DepartmentService.update(id, dto) - 更新部门
+
+actor "调用方" as Client
+participant "DepartmentController" as Ctrl
+participant "DepartmentService" as Service
+participant "DepartmentRepository" as Repo
+participant "Department\n(实体)" as Entity
+
+Client -> Ctrl: PUT /api/departments/{id}\n{name, code, parentId, ...}
+Ctrl -> Service: update(id, dto)
+Service -> Repo: findById(id)
+Repo --> Service: 现有Department实体
+note right of Service : 更新字段:\nsetName / setCode\nsetSortOrder\nsetParent(如提供)
+alt parentId非空且非自身
+  Service -> Repo: findById(parentId)
+  Repo --> Service: 上级Department
+  Service --> Entity: setParent(parent)
+end
+Service -> Repo: save(dept)
+Repo --> Service: 更新后的Department
+Service --> Ctrl: Department
+Ctrl --> Client: ApiResponse<Department>
+@enduml

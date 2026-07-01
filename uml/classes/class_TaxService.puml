@@ -1,0 +1,10 @@
+@startuml
+skinparam backgroundColor #F9FAFB
+skinparam defaultFontSize 12
+class TaxService as "TaxService\n个税服务" #ECFDF5 {
+  - taxConfigRepository: TaxConfigRepository
+  ..
+  + calculateTax(yearMonth, monthlyIncome, cumulativeIncome, cumulativeExempt, cumulativeDeduction, cumulativeTaxPaid, specialDeduction): double
+}
+note right of TaxService : 累计预扣法:\n应纳税所得额 = 累计收入 - 5000×月数 - 专项扣除\n本月应缴 = 应纳税×税率 - 速算扣除数 - 已缴
+@enduml

@@ -1,5 +1,6 @@
 package com.salary.module.org.domain;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 import java.time.LocalDateTime;
@@ -8,6 +9,7 @@ import java.util.List;
 
 @Entity @Table(name = "sys_department")
 @Data @Builder @NoArgsConstructor @AllArgsConstructor
+@EqualsAndHashCode(exclude = {"parent", "children"})
 public class Department {
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -17,8 +19,10 @@ public class Department {
     private String code;
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "parent_id")
+    @ToString.Exclude
     private Department parent;
     @OneToMany(mappedBy = "parent", cascade = CascadeType.ALL)
+    @JsonIgnore
     @ToString.Exclude
     private List<Department> children = new ArrayList<>();
     @Column(nullable = false)

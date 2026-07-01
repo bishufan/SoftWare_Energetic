@@ -1,0 +1,15 @@
+@startuml
+skinparam backgroundColor #F9FAFB
+skinparam defaultFontSize 12
+class ReportController as "ReportController\n报表控制" #EEF2FF {
+  - reportService: ReportService
+  - excelService: ExcelService
+  - logService: OperationLogService
+  ..
+  + departmentSummary(yearMonth): ApiResponse
+  + taxReport(yearMonth): ApiResponse
+  + exportTaxReport(yearMonth, req): ResponseEntity<byte[]>
+  + yearlyComparison(year): ApiResponse
+}
+note right of ReportController : GET /api/reports/department-summary\nGET /api/reports/tax-report\nGET /api/reports/tax-report/export → Excel\nGET /api/reports/yearly-comparison
+@enduml

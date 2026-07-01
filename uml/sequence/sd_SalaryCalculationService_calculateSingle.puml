@@ -1,0 +1,63 @@
+@startuml sd_SalaryCalculationService_calculateSingle
+skinparam backgroundColor #F9FAFB
+title SalaryCalculationService.calculateSingle(emp, ym, items, vars) - 单个员工工资计算
+
+actor "调用方" as Client
+participant "SalaryCalculationService" as CalcSvc
+participant "SalaryItemRepository" as ItemRepo
+participant "SocialSecurityService" as SsSvc
+participant "TaxService" as TaxSvc
+participant "SalaryRecordRepository" as RecRepo
+participant "ObjectMapper" as OM
+participant "SalaryRecord\n(实体)" as Rec
+
+Client -> CalcSvc: calculateSingle(employee, yearMonth, items, variableValues)
+note right of CalcSvc #F0F8FF
+  **Step 1: 获取上月记录**
+  用于累计值计算
+end note
+CalcSvc -> RecRepo: findByEmployeeIdAndYearMonth(empId, lastMonth)
+RecRepo --> CalcSvc: Optional<SalaryRecord>
+note right of CalcSvc #F0F8FF
+  **Step 2: 逐项计算工资项**
+  for each SalaryItem:
+  - 有公式: eval公式(引用其他项code)
+  - 无公式: 默认值或变量值
+  - 累加EARNING→grossPay
+  - 累加SOCIAL→socialInsurance
+  - 累加FUND→housingFund
+end note
+loop 每个活动工资项
+  CalcSvc -> CalcSvc: evaluateItem(item, emp, ym, vars, itemValueMap)
+  note right: 公式引擎: replace(code→value) → 简单四则运算
+end
+note right of CalcSvc #F0F8FF
+  **Step 3: 计算累计值**
+  cumulativeIncome = grossPay + 上月累计
+  cumulativeDeduction = 社保+公积金 + 上月累计
+end note
+CalcSvc -> SsSvc: calculate(employee, yearMonth)
+SsSvc --> CalcSvc: {socialInsurance, housingFund}
+note right of CalcSvc #F0F8FF
+  **Step 4: 计算个税**
+  taxable = cumulativeIncome - 5000×月数
+            - cumulativeDeduction
+end note
+CalcSvc -> TaxSvc: calculateTax(...)
+TaxSvc --> CalcSvc: incomeTax
+note right of CalcSvc #F0F8FF
+  **Step 5: 计算实发**
+  netPay = grossPay - incomeTax
+           - socialInsurance - housingFund
+end note
+CalcSvc -> OM: writeValueAsString(itemValueMap)
+OM --> CalcSvc: JSON字符串
+note right of CalcSvc #F0F8FF
+  **Step 6: 构建SalaryRecord**
+  含所有累计值字段
+  status=DRAFT
+end note
+CalcSvc -> RecRepo: save(record)
+RecRepo --> CalcSvc: 持久化后SalaryRecord
+CalcSvc --> Client: SalaryRecord
+@enduml

@@ -1,0 +1,15 @@
+@startuml
+skinparam backgroundColor #F9FAFB
+skinparam defaultFontSize 12
+class SalaryItemService as "SalaryItemService\n工资项目服务" #ECFDF5 {
+  - salaryItemRepository: SalaryItemRepository
+  ..
+  + getAll(): List<SalaryItem>
+  + getByType(itemType): List<SalaryItem>
+  + getById(id): SalaryItem
+  + create(item): SalaryItem
+  + update(id, dto): SalaryItem
+  + delete(id): void
+}
+note right of SalaryItemService : delete: 逻辑删除\nactive = false
+@enduml

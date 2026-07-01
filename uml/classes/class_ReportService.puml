@@ -1,0 +1,13 @@
+@startuml
+skinparam backgroundColor #F9FAFB
+skinparam defaultFontSize 12
+class ReportService as "ReportService\n报表服务" #ECFDF5 {
+  - recordRepository: SalaryRecordRepository
+  - departmentRepository: DepartmentRepository
+  ..
+  + getDepartmentSummary(yearMonth): List<DeptSalarySummary>
+  + getTaxReport(yearMonth): List<Map<String, Object>>
+  + getYearlyComparison(year): List<YearlyComparisonDto>
+}
+note right of ReportService : getDepartmentSummary: 部门分组统计\n人数/应发/个税/社保/实发\ngetYearlyComparison: 年度趋势
+@enduml

@@ -1,0 +1,27 @@
+@startuml sd_EmployeeService_update
+skinparam backgroundColor #F9FAFB
+title EmployeeService.update(id, dto) - 更新员工信息
+
+actor "调用方" as Client
+participant "EmployeeController" as Ctrl
+participant "EmployeeService" as Service
+participant "EmployeeRepository" as Repo
+participant "Employee\n(实体)" as Entity
+
+Client -> Ctrl: PUT /api/employees/{id}\n{name, phone, department, ...}
+Ctrl -> Service: update(id, dto)
+Service -> Repo: findById(id)
+Repo --> Service: 现有Employee实体
+note right of Service #F0F8FF
+  **更新多个字段:**
+  name / idCard / phone / email
+  department / position / hireDate
+  resignDate / socialSecurityBase
+  housingFundBase / socialSecurityCity
+end note
+Service -> Entity: setXxx(dto.getXxx())
+Service -> Repo: save(emp)
+Repo --> Service: 更新后的Employee
+Service --> Ctrl: Employee
+Ctrl --> Client: ApiResponse<Employee>
+@enduml

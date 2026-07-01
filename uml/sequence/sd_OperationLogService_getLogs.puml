@@ -1,0 +1,19 @@
+@startuml sd_OperationLogService_getLogs
+skinparam backgroundColor #F9FAFB
+title OperationLogService.getLogs(pageable) - 分页查询操作日志
+
+actor "调用方" as Client
+participant "SystemController" as Ctrl
+participant "OperationLogService" as LogSvc
+participant "OperationLogRepository" as LogRepo
+participant "Page" as Page
+
+Client -> Ctrl: GET /api/system/logs?page=0&size=20
+Ctrl -> LogSvc: getLogs(pageable)
+LogSvc -> LogRepo: findAllByOrderByCreateTimeDesc(pageable)
+note right of LogSvc : 按createTime降序\n最新操作排在前面
+LogRepo --> LogSvc: Page<OperationLog>
+LogSvc --> Ctrl: Page<OperationLog>
+note right of Page : 含content/totalPages\ntotalElements/number
+Ctrl --> Client: ApiResponse<Page>\n[ {username:admin, operation:工资计算,\n   result:SUCCESS, createTime:...}, ... ]
+@enduml

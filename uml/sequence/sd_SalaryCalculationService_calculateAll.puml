@@ -1,0 +1,40 @@
+@startuml sd_SalaryCalculationService_calculateAll
+skinparam backgroundColor #F9FAFB
+title SalaryCalculationService.calculateAll(yearMonth, trialRun, username) - 批量工资计算
+
+actor "调用方" as Client
+participant "SalaryCalculation\nService" as CalcSvc
+participant "EmployeeRepository" as EmpRepo
+participant "UserRepository" as UsrRepo
+participant "SalaryItemRepository" as ItemRepo
+participant "SalaryRecordRepository" as RecRepo
+participant "TaxService" as TaxSvc
+participant "SocialSecurity\nService" as SsSvc
+
+Client -> CalcSvc: calculateAll("202403", false, "admin")
+note right of CalcSvc : @Transactional
+CalcSvc -> EmpRepo: findByActiveTrue()
+EmpRepo --> CalcSvc: List<Employee> (全部在职员工)
+CalcSvc -> UsrRepo: findByUsername("admin")
+UsrRepo --> CalcSvc: User (操作人)
+CalcSvc -> ItemRepo: findByActiveTrueOrderBySortOrder()
+ItemRepo --> CalcSvc: List<SalaryItem> (14个工资项)
+note right of CalcSvc : 获取上月记录用于累计值
+
+loop 每个在职员工
+  CalcSvc -> CalcSvc: calculateSingle(emp, ym, items, null)
+  note right #F0F8FF
+    **内部顺序:**
+    1. 计算各工资项值
+    2. 计算社保公积金(SsSvc)
+    3. 计算个税(TaxSvc)
+    4. 计算实发合计
+    5. 构建SalaryRecord
+  end note
+  CalcSvc -> RecRepo: save(record)
+  RecRepo --> CalcSvc: 持久化SalaryRecord
+end
+note right of CalcSvc : trialRun=false → status=CONFIRMED\ntrialRun=true → status=DRAFT
+CalcSvc --> Client: List<SalaryRecord>
+note right of Client : 返回本批次全部工资记录
+@enduml

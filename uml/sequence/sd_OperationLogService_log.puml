@@ -1,0 +1,30 @@
+@startuml sd_OperationLogService_log
+skinparam backgroundColor #F9FAFB
+title OperationLogService.log(username, operation, detail, ip, success) - 操作日志记录
+
+actor "调用方" as Client
+participant "PayrollController" as Ctrl
+participant "OperationLogService" as LogSvc
+participant "OperationLogRepository" as LogRepo
+participant "OperationLog\n(实体)" as LogEntity
+
+Client -> Ctrl: POST /api/payroll/calculate\n{yearMonth, trialRun}
+note right of Ctrl : 工资计算完成后\n调用日志服务
+Ctrl -> LogSvc: log("admin", "工资计算",\n"2024年3月工资计算, 共50人",\n"192.168.1.1", true)
+LogSvc -> LogEntity: OperationLog.builder()
+note right of LogSvc #F0F8FF
+  **构建日志实体:**
+  username = "admin"
+  operation = "工资计算"
+  detail = "2024年3月工资..."
+  ipAddress = "192.168.1.1"
+  result = "SUCCESS"
+  createTime = now()
+end note
+LogSvc -> LogRepo: save(logEntity)
+LogRepo --> LogSvc: 持久化后的OperationLog
+LogSvc --> Ctrl: void
+Ctrl --> Client: ApiResponse(计算结果)
+note right of Ctrl : 如果log失败\n不影响主业务事务
+
+@enduml

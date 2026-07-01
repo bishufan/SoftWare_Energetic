@@ -1,0 +1,19 @@
+@startuml
+skinparam backgroundColor #F9FAFB
+skinparam defaultFontSize 12
+class Department as "Department\n部门" #FCE7F3 {
+  - id: Long
+  - name: String
+  - code: String
+  - parent: Department
+  - children: List<Department>
+  - active: Boolean
+  - sortOrder: Integer
+  - createTime: LocalDateTime
+  - updateTime: LocalDateTime
+  ..
+  + onCreate(): void
+  + onUpdate(): void
+}
+note right of Department : PK, AUTO_INCREMENT, 表: sys_department\nname: length=100, NOT NULL\ncode: length=50\nparent: 自关联FK\nchildren: mappedBy=parent\nactive: default=true, 逻辑删除
+@enduml

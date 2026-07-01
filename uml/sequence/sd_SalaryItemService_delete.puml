@@ -1,0 +1,24 @@
+@startuml sd_SalaryItemService_delete
+skinparam backgroundColor #F9FAFB
+title SalaryItemService.delete(id) - 删除工资项目
+
+actor "调用方" as Client
+participant "SalaryItemController" as Ctrl
+participant "SalaryItemService" as Svc
+participant "SalaryItemRepository" as Repo
+participant "SalaryItem\n(实体)" as Item
+
+Client -> Ctrl: DELETE /api/salary-items/{id}
+Ctrl -> Svc: delete(id)
+Svc -> Repo: findById(id)
+Repo --> Svc: SalaryItem
+alt builtIn=true
+  Svc --> Ctrl: throw RuntimeException\n("内置项目不可删除")
+else builtIn=false
+  Svc -> Item: setActive(false)
+  Svc -> Repo: save(item)
+  Repo --> Svc: 更新后的SalaryItem
+  Svc --> Ctrl: void
+end
+Ctrl --> Client: ApiResponse("删除成功")
+@enduml

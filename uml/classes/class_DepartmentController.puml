@@ -1,0 +1,15 @@
+@startuml
+skinparam backgroundColor #F9FAFB
+skinparam defaultFontSize 12
+class DepartmentController as "DepartmentController\n部门控制" #EEF2FF {
+  - departmentService: DepartmentService
+  ..
+  + getAll(): ApiResponse<List<Department>>
+  + getActive(): ApiResponse<List<Department>>
+  + getById(id): ApiResponse<Department>
+  + create(department): ApiResponse<Department>
+  + update(id, department): ApiResponse<Department>
+  + delete(id): ApiResponse
+}
+note right of DepartmentController : GET /api/departments\nGET /api/departments/active\nDELETE: 逻辑删除
+@enduml

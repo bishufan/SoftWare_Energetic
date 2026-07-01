@@ -1,0 +1,16 @@
+@startuml
+skinparam backgroundColor #F9FAFB
+skinparam defaultFontSize 12
+class EmployeeService as "EmployeeService\n员工服务" #ECFDF5 {
+  - employeeRepository: EmployeeRepository
+  - departmentRepository: DepartmentRepository
+  ..
+  + getAll(): List<Employee>
+  + getById(id): Employee
+  + create(employee): Employee
+  + update(id, dto): Employee
+  + delete(id): void
+  + search(params): Page<Employee>
+}
+note right of EmployeeService : search: JpaSpecificationExecutor\n多条件分页查询\n\ndelete: 逻辑删除
+@enduml

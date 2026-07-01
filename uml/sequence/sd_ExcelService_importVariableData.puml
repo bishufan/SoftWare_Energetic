@@ -1,0 +1,46 @@
+@startuml sd_ExcelService_importVariableData
+skinparam backgroundColor #F9FAFB
+title ExcelService.importVariableData(file) - Excel可变数据导入
+
+actor "调用方" as Client
+participant "PayrollController" as Ctrl
+participant "ExcelService" as ExcelSvc
+participant "SalaryItemRepository" as ItemRepo
+participant "Workbook\n(XSSFWorkbook)" as Wb
+participant "Sheet" as Sheet
+participant "Row" as Row
+
+Client -> Ctrl: POST /api/payroll/import\nMultipartFile (Excel)
+Ctrl -> ExcelSvc: importVariableData(file)
+note right of ExcelSvc #F0F8FF
+  **导入流程:**
+  1. 读取文件流
+  2. 创建XSSFWorkbook
+  3. 解析Sheet[0]
+end note
+ExcelSvc -> ItemRepo: findByActiveTrueOrderBySortOrder()
+ItemRepo --> ExcelSvc: List<SalaryItem>
+ExcelSvc -> ExcelSvc: filter(无公式项) → variableItems
+ExcelSvc -> Wb: new XSSFWorkbook(file.getInputStream())
+ExcelSvc -> Wb: getSheetAt(0)
+Wb --> ExcelSvc: Sheet
+note right of ExcelSvc #F0F8FF
+  **解析表头(行0):**
+  B1=考勤扣款→colItemMap: 1→item.id
+  C1=绩效工资→colItemMap: 2→item.id
+end note
+ExcelSvc -> Sheet: getRow(0)
+Sheet --> ExcelSvc: headerRow
+loop 每个数据行(r=1起)
+  ExcelSvc -> Sheet: getRow(r)
+  Sheet --> ExcelSvc: Row
+  ExcelSvc -> Row: getCell(0) → 工号
+  note right of ExcelSvc #F0F8FF
+    **解析行数据:**
+    A列=工号, B列=考勤扣款值
+    → map.put(工号, {itemId: value})
+  end note
+end
+ExcelSvc --> Ctrl: Map<String, Map<Long, Double>>\n{ "EMP001": {1:-200, 2:3000} }
+Ctrl --> Client: ApiResponse(导入数据)
+@enduml

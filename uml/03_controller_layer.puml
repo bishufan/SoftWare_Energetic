@@ -1,0 +1,113 @@
+@startuml controller_layer
+skinparam backgroundColor #F9FAFB
+skinparam defaultFontSize 12
+skinparam class {
+  BorderThickness 2
+  FontSize 11
+}
+
+' === Controller Classes ===
+
+class AuthController as "AuthController\n认证控制" #EEF2FF {
+  + userRepository: UserRepository
+  + passwordEncoder: PasswordEncoder
+  + jwtUtil: JwtUtil
+  ..
+  + POST /api/auth/login → token
+  + POST /api/auth/register → ok
+}
+
+class DepartmentController as "DepartmentController\n部门控制" #EEF2FF {
+  + departmentService: DepartmentService
+  ..
+  + GET /api/departments → List
+  + GET /api/departments/active → List
+  + GET /api/departments/{id} → Department
+  + POST /api/departments → Department
+  + PUT /api/departments/{id} → Department
+  + DELETE /api/departments/{id} → ok
+}
+
+class EmployeeController as "EmployeeController\n员工控制" #EEF2FF {
+  + employeeService: EmployeeService
+  ..
+  + GET /api/employees → Page
+  + GET /api/employees/all → List
+  + GET /api/employees/{id} → Employee
+  + POST /api/employees → Employee
+  + PUT /api/employees/{id} → Employee
+  + DELETE /api/employees/{id} → ok
+}
+
+class SalaryItemController as "SalaryItemController\n工资项目控制" #EEF2FF {
+  + salaryItemService: SalaryItemService
+  ..
+  + GET /api/salary-items → List
+  + GET /api/salary-items/type/{type} → List
+  + GET /api/salary-items/{id} → SalaryItem
+  + POST /api/salary-items → SalaryItem
+  + PUT /api/salary-items/{id} → SalaryItem
+  + DELETE /api/salary-items/{id} → ok
+}
+
+class PayrollController as "PayrollController\n工资核算控制" #EEF2FF {
+  + calculationService: SalaryCalculationService
+  + excelService: ExcelService
+  + logService: OperationLogService
+  ..
+  + POST /api/payroll/calculate → List<SalaryRecord>
+  + GET /api/payroll/records → List
+  + GET /api/payroll/records/employee/{id} → List
+  + GET /api/payroll/records/employee/{id}/{ym}
+  + POST /api/payroll/records/{id}/confirm
+  + POST /api/payroll/import → ok
+  + GET /api/payroll/export → Excel
+}
+
+class PayslipController as "PayslipController\n工资条控制" #EEF2FF {
+  + payslipService: PayslipService
+  + logService: OperationLogService
+  ..
+  + GET /api/payslips/{id}/pdf → PDF
+  + GET /api/payslips/{id}/html → HTML
+  + POST /api/payslips/{id}/push → ok
+}
+
+class ReportController as "ReportController\n报表控制" #EEF2FF {
+  + reportService: ReportService
+  + excelService: ExcelService
+  + logService: OperationLogService
+  ..
+  + GET /api/reports/department-summary
+  + GET /api/reports/tax-report
+  + GET /api/reports/tax-report/export → Excel
+  + GET /api/reports/yearly-comparison
+}
+
+class SystemController as "SystemController\n系统管理控制" #EEF2FF {
+  + userRepository: UserRepository
+  + passwordEncoder: PasswordEncoder
+  + socialSecurityRepo: SocialSecurityConfigRepository
+  + taxConfigRepo: TaxConfigRepository
+  + logService: OperationLogService
+  ..
+  + CRUD /api/system/users
+  + CRUD /api/system/social-security
+  + GET /api/system/logs
+}
+
+' === Permissions annotation ===
+note top of AuthController : 无需认证\n/permitAll()
+note top of SystemController : @PreAuthorize\nhasRole('ADMIN')
+
+note bottom of PayrollController
+  @PreAuthorize
+  hasRole('FINANCE')
+end note
+
+note bottom of ReportController
+  @PreAuthorize
+  hasAnyRole('ADMIN','FINANCE','HR')
+end note
+
+@enduml

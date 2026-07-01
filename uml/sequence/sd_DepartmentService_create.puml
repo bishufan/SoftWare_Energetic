@@ -1,0 +1,19 @@
+@startuml sd_DepartmentService_create
+skinparam backgroundColor #F9FAFB
+title DepartmentService.create(department) - 创建部门
+
+actor "调用方" as Client
+participant "DepartmentController" as Ctrl
+participant "DepartmentService" as Service
+participant "DepartmentRepository" as Repo
+participant "Department\n(实体)" as Entity
+
+Client -> Ctrl: POST /api/departments\n{name, code, parentId, ...}
+Ctrl -> Service: create(department)
+note right of Service : @Transactional
+Service -> Repo: save(department)
+Repo --> Service: 持久化后的Department\n(含ID)
+Service --> Ctrl: Department
+note right of Entity : JPA自动生成ID\n维护parent关系
+Ctrl --> Client: ApiResponse<Department>
+@enduml

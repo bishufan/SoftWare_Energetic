@@ -1,0 +1,13 @@
+@startuml
+skinparam backgroundColor #F9FAFB
+skinparam defaultFontSize 12
+class PayslipController as "PayslipController\n工资条控制" #EEF2FF {
+  - payslipService: PayslipService
+  - logService: OperationLogService
+  ..
+  + downloadPdf(recordId): ResponseEntity<byte[]>
+  + viewHtml(recordId): ApiResponse<String>
+  + pushPayslip(recordId, req): ApiResponse
+}
+note right of PayslipController : GET /api/payslips/{id}/pdf → PDF下载\nGET /api/payslips/{id}/html → 预览\nPOST /api/payslips/{id}/push hasRole('FINANCE')
+@enduml

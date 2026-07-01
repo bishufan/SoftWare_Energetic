@@ -1,0 +1,17 @@
+@startuml sd_SalaryItemService_create
+skinparam backgroundColor #F9FAFB
+title SalaryItemService.create(item) - 创建工资项目
+
+actor "调用方" as Client
+participant "SalaryItemController" as Ctrl
+participant "SalaryItemService" as Service
+participant "SalaryItemRepository" as Repo
+
+Client -> Ctrl: POST /api/salary-items\n{name, code, itemType, formula, sortOrder}
+Ctrl -> Service: create(item)
+Service -> Repo: save(item)
+Repo --> Service: 持久化后SalaryItem
+Service --> Ctrl: SalaryItem
+note right of Service : @Transactional\n内置项标志builtIn=false\nactive默认true
+Ctrl --> Client: ApiResponse<SalaryItem>
+@enduml

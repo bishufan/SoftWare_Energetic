@@ -1,0 +1,39 @@
+@startuml sd_TaxService_calculateTax
+skinparam backgroundColor #F9FAFB
+title TaxService.calculateTax(…) - 个税累计预扣法计算
+
+actor "调用方" as Client
+participant "SalaryCalculationService" as CalcSvc
+participant "TaxService" as TaxSvc
+participant "TaxConfigRepository" as TaxRepo
+participant "TaxConfig\n(实体)" as TaxConfig
+
+Client -> CalcSvc: calculateAll(yearMonth, trialRun, username)
+CalcSvc -> TaxSvc: calculateTax(yearMonth, monthlyIncome,\ncumulativeIncome, cumulativeExempt,\ncumulativeDeduction, cumulativeTaxPaid,\nspecialDeduction)
+note right of TaxSvc #F0F8FF
+  **计算过程:**
+  1. year = 2024, month = 03
+  2. 减除费用 = 5000 × 3 = 15000
+  3. 应纳税所得额 = cumulativeIncome
+     - cumulativeExempt - 15000
+     - cumulativeDeduction
+     - specialDeduction
+  4. if ≤ 0 → return 0
+end note
+TaxSvc -> TaxRepo: findByYearAndActiveTrueOrderByLevel(year)
+TaxRepo --> TaxSvc: List<TaxConfig>\n(7级税率表)
+note right of TaxSvc #F0F8FF
+  **按级距计算:**
+  等级1: 0~36000 × 3%
+  等级2: 36000~144000 × 10%
+  等级3: 144000~300000 × 20%
+  ...
+  累计税额 = Σ(每级金额×税率)
+  本月应缴 = max(0, 累计税额 - 已缴)
+end note
+alt 无配置
+  TaxSvc -> TaxSvc: getDefaultBrackets()\n使用默认7级税率
+end
+TaxSvc --> CalcSvc: double (本月应缴个税)
+CalcSvc --> Client: 保存到SalaryRecord
+@enduml

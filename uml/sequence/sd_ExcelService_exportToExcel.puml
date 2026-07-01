@@ -1,0 +1,47 @@
+@startuml sd_ExcelService_exportToExcel
+skinparam backgroundColor #F9FAFB
+title ExcelService.exportToExcel(records) - 导出工资明细Excel
+
+actor "调用方" as Client
+participant "PayrollController" as Ctrl
+participant "ExcelService" as ExcelSvc
+participant "Workbook\n(XSSFWorkbook)" as Wb
+participant "Sheet" as Sheet
+participant "CellStyle" as Style
+participant "SalaryRecord\n(实体)" as Rec
+
+Client -> Ctrl: GET /api/payroll/export?yearMonth=202403
+Ctrl -> ExcelSvc: exportToExcel(records)
+note right of ExcelSvc #F0F8FF
+  **导出流程:**
+  1. 创建XSSFWorkbook
+  2. 创建"工资明细"Sheet
+  3. 创建表头样式(grey背景)
+end note
+ExcelSvc -> Wb: new XSSFWorkbook()
+ExcelSvc -> Wb: createSheet("工资明细")
+Wb --> ExcelSvc: Sheet
+ExcelSvc -> Wb: createCellStyle()
+ExcelSvc -> Style: setFillForegroundColor(GREY)
+ExcelSvc -> Sheet: createRow(0)
+note right of ExcelSvc #F0F8FF
+  **表头:**
+  工资号 | 姓名 | 部门
+  应发合计 | 个税 | 社保
+  公积金 | 实发合计
+end note
+loop SalaryRecord | 每行
+  ExcelSvc -> Sheet: createRow(rn++)
+  ExcelSvc -> Rec: getEmployee().getEmployeeNo()
+  ExcelSvc -> Rec: getEmployee().getName()
+  ExcelSvc -> Rec: getEmployee().getDepartment().getName()
+  ExcelSvc -> Rec: getGrossPay() / getIncomeTax()
+  ExcelSvc -> Rec: getSocialInsurance() / getHousingFund()
+  ExcelSvc -> Rec: getNetPay()
+end
+ExcelSvc -> ExcelSvc: autoSizeColumn(i) for each
+ExcelSvc -> Wb: write(bos)
+ExcelSvc --> Ctrl: byte[] (Excel二进制)
+note right of Ctrl : ResponseEntity → Content-Disposition: attachment;\nfilename=工资明细_202403.xlsx
+Ctrl --> Client: Excel文件下载
+@enduml

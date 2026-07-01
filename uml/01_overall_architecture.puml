@@ -1,0 +1,128 @@
+@startuml overall_architecture
+skinparam backgroundColor #F9FAFB
+skinparam defaultFontSize 11
+skinparam packageStyle rectangle
+skinparam package {
+  BorderThickness 2
+  FontSize 13
+  FontStyle bold
+}
+
+' === Layer Style Configuration ===
+package "控制层 (Controller Layer)" as CONT #EEF2FF {
+  [AuthController] as CC1
+  [DepartmentController] as CC2
+  [EmployeeController] as CC3
+  [SalaryItemController] as CC4
+  [PayrollController] as CC5
+  [PayslipController] as CC6
+  [ReportController] as CC7
+  [SystemController] as CC8
+  [IndexController] as CC9
+}
+
+package "业务层 (Service Layer)" as SVC #ECFDF5 {
+  [DepartmentService] as SC1
+  [EmployeeService] as SC2
+  [SalaryItemService] as SC3
+  [SalaryCalculationService] as SC4
+  [TaxService] as SC5
+  [SocialSecurityService] as SC6
+  [ExcelService] as SC7
+  [PayslipService] as SC8
+  [ReportService] as SC9
+  [OperationLogService] as SC10
+  [DataInitializer] as SC11
+}
+
+package "数据访问层 (Repository Layer)" as REP #FEF3C7 {
+  [DepartmentRepository] as R1
+  [EmployeeRepository] as R2
+  [UserRepository] as R3
+  [SalaryItemRepository] as R4
+  [SalaryRecordRepository] as R5
+  [SocialSecurityConfigRepository] as R6
+  [TaxConfigRepository] as R7
+  [OperationLogRepository] as R8
+}
+
+package "领域模型层 (Domain Entity)" as DOM #FCE7F3 {
+  [Department] as D1
+  [Employee] as D2
+  [User] as D3
+  [SalaryItem] as D4
+  [SalaryRecord] as D5
+  [SocialSecurityConfig] as D6
+  [TaxConfig] as D7
+  [OperationLog] as D8
+}
+
+package "DTO / 基础设施" as INF #EDE9FE {
+  [LoginRequest]
+  [ApiResponse]
+  [SalaryCalculationRequest]
+  [DeptSalarySummary]
+  [YearlyComparisonDto]
+  [JwtUtil]
+  [JwtAuthFilter]
+  [SecurityConfig]
+  [CorsConfig]
+  [GlobalExceptionHandler]
+}
+
+' === Relationships: Controller → Service (依赖/调用) ===
+CC1 ..> SC4 : depends >
+CC2 ..> SC1 : depends >
+CC3 ..> SC2 : depends >
+CC4 ..> SC3 : depends >
+CC5 ..> SC4 : depends >
+CC5 ..> SC7 : depends >
+CC5 ..> SC10 : depends >
+CC6 ..> SC8 : depends >
+CC6 ..> SC10 : depends >
+CC7 ..> SC9 : depends >
+CC7 ..> SC7 : depends >
+CC7 ..> SC10 : depends >
+CC8 ..> SC10 : depends >
+CC9 ..> SVC : forward >
+
+' === Relationships: Service → Repository (依赖/调用) ===
+SC1 ..> R1 : depends >
+SC2 ..> R2 : depends >
+SC2 ..> R1 : depends >
+SC3 ..> R4 : depends >
+SC4 ..> R5 : depends >
+SC4 ..> R4 : depends >
+SC4 ..> R2 : depends >
+SC4 ..> R3 : depends >
+SC5 ..> R7 : depends >
+SC6 ..> R6 : depends >
+SC7 ..> R4 : depends >
+SC8 ..> R5 : depends >
+SC8 ..> R4 : depends >
+SC9 ..> R5 : depends >
+SC9 ..> R1 : depends >
+SC10 ..> R8 : depends >
+
+' === Service → Service (内部依赖) ===
+SC4 ..> SC5 : 个税计算 >
+SC4 ..> SC6 : 社保核算 >
+
+' === Repository → Entity (泛化 implements) ===
+R1 --|> D1
+R2 --|> D2
+R3 --|> D3
+R4 --|> D4
+R5 --|> D5
+R6 --|> D6
+R7 --|> D7
+R8 --|> D8
+
+' === Entity Relationships (领域关联) ===
+D1 --> D1 : 自关联 parent/children >
+D2 --> D1 : belongTo department >
+D3 --> D2 : linkTo employee >
+D5 --> D2 : refTo employee >
+D5 --> D3 : processedBy user >
+
+@enduml

@@ -1,0 +1,15 @@
+@startuml
+skinparam backgroundColor #F9FAFB
+skinparam defaultFontSize 12
+class SalaryItem as "SalaryItem\n工资项目" #FCE7F3 {
+  - id: Long
+  - name: String
+  - code: String
+  - itemType: String
+  - formula: String
+  - builtIn: Boolean
+  - sortOrder: Integer
+  - active: Boolean
+}
+note right of SalaryItem : PK, 表: sys_salary_item\nname: length=100, NOT NULL\nitemType: EARNING/DEDUCTION/TAX/SOCIAL/FUND/NET\nformula: 如 basePay+meritPay\nbuiltIn: default=false\nactive: default=true
+@enduml

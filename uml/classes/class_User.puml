@@ -1,0 +1,20 @@
+@startuml
+skinparam backgroundColor #F9FAFB
+skinparam defaultFontSize 12
+class User as "User\n系统用户" #FCE7F3 {
+  - id: Long
+  - username: String
+  - password: String
+  - realName: String
+  - email: String
+  - employee: Employee
+  - role: String
+  - active: Boolean
+  - createTime: LocalDateTime
+  - updateTime: LocalDateTime
+  ..
+  + onCreate(): void
+  + onUpdate(): void
+}
+note right of User : PK, 表: sys_user\nusername: UNIQUE, NOT NULL\npassword: BCrypt加密\nrole: ∈{ADMIN,FINANCE,HR,EMPLOYEE}\nemployee: FK→Employee.id
+@enduml

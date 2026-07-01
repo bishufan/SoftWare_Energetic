@@ -1,0 +1,32 @@
+@startuml sd_EmployeeService_search
+skinparam backgroundColor #F9FAFB
+title EmployeeService.search(params, pageable) - 多条件分页查询员工
+
+actor "调用方" as Client
+participant "EmployeeController" as Ctrl
+participant "EmployeeService" as Service
+participant "EmployeeRepository" as Repo
+participant "Specification" as Spec
+participant "Employee\n(实体)" as Entity
+
+Client -> Ctrl: GET /api/employees\n?name=张&deptId=1&active=true&page=0&size=10
+Ctrl -> Service: search(params, pageable)
+Service -> Service: 构造Specification
+note right of Service #F0F8FF
+  **动态拼接Predicate:**
+  1. name: LIKE %keyword%
+  2. employeeNo: LIKE %keyword%
+  3. departmentId: = equal
+  4. active: = equal
+  用 cb.and() 组合
+end note
+Service -> Spec: 创建 (root, query, cb)
+activate Spec
+Service -> Repo: findAll(spec, pageable)
+Repo -> Spec: apply(root, query, cb)
+Spec --> Repo: Predicate[]
+Repo --> Service: Page<Employee>
+deactivate Spec
+Service --> Ctrl: Page<Employee>
+Ctrl --> Client: ApiResponse<Page>\n(含content/totalPages/totalElements)
+@enduml

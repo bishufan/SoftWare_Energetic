@@ -1,0 +1,146 @@
+@startuml service_layer
+skinparam backgroundColor #F9FAFB
+skinparam defaultFontSize 11
+skinparam class {
+  BorderThickness 2
+  FontSize 11
+}
+
+' === Service Classes ===
+
+class DepartmentService as "DepartmentService\n部门服务" #ECFDF5 {
+  - departmentRepository: DepartmentRepository
+  ..
+  + getTree(): List<Department>
+  + getActive(): List<Department>
+  + create(Department): Department
+  + update(id, Department): Department
+  + delete(id): void
+}
+
+class EmployeeService as "EmployeeService\n员工服务" #ECFDF5 {
+  - employeeRepository: EmployeeRepository
+  - departmentRepository: DepartmentRepository
+  ..
+  + getAll(): List<Employee>
+  + getById(id): Employee
+  + create(Employee): Employee
+  + update(id, Employee): Employee
+  + delete(id): void
+  + search(Map): Page<Employee>
+}
+
+class SalaryItemService as "SalaryItemService\n工资项服务" #ECFDF5 {
+  - salaryItemRepository: SalaryItemRepository
+  ..
+  + getAll(): List<SalaryItem>
+  + getByType(String): List<SalaryItem>
+  + getById(id): SalaryItem
+  + create(SalaryItem): SalaryItem
+  + update(id, SalaryItem): SalaryItem
+  + delete(id): void
+}
+
+class SalaryCalculationService as "SalaryCalculationService\n工资计算服务 ★核心" #ECFDF5 {
+  - recordRepository: SalaryRecordRepository
+  - salaryItemRepository: SalaryItemRepository
+  - employeeRepository: EmployeeRepository
+  - userRepository: UserRepository
+  - taxService: TaxService
+  - socialSecurityService: SocialSecurityService
+  - objectMapper: ObjectMapper
+  ..
+  + calculateAll(yearMonth, trial, username): List<SalaryRecord>
+  + getRecords(yearMonth, deptId): List<SalaryRecord>
+  + getEmployeeRecords(empId): List<SalaryRecord>
+  + getEmployeeMonthRecord(empId, ym): SalaryRecord
+}
+
+class TaxService as "TaxService\n个税服务" #ECFDF5 {
+  - taxConfigRepository: TaxConfigRepository
+  ..
+  + calculateTax(ym, monthlyIncome, cumulativeIncome, cumulativeExempt, cumulativeDeduction, cumulativeTaxPaid, specialDeduction): double
+}
+
+class SocialSecurityService as "SocialSecurityService\n社保服务" #ECFDF5 {
+  - configRepository: SocialSecurityConfigRepository
+  ..
+  + calculate(Employee, yearMonth): Map<String, Double>
+}
+
+class ExcelService as "ExcelService\nExcel服务" #ECFDF5 {
+  - salaryItemRepository: SalaryItemRepository
+  ..
+  + importVariableData(MultipartFile): Map
+  + exportToExcel(List<SalaryRecord>): byte[]
+  + exportTaxReportToExcel(List<Map>): byte[]
+}
+
+class PayslipService as "PayslipService\n工资条服务" #ECFDF5 {
+  - recordRepository: SalaryRecordRepository
+  - salaryItemRepository: SalaryItemRepository
+  - objectMapper: ObjectMapper
+  ..
+  + generatePdf(recordId): byte[]
+  + generateHtml(recordId): String
+}
+
+class ReportService as "ReportService\n报表服务" #ECFDF5 {
+  - recordRepository: SalaryRecordRepository
+  - departmentRepository: DepartmentRepository
+  ..
+  + getDepartmentSummary(yearMonth): List<DeptSalarySummary>
+  + getTaxReport(yearMonth): List<Map>
+  + getYearlyComparison(year): List<YearlyComparisonDto>
+}
+
+class OperationLogService as "OperationLogService\n日志服务" #ECFDF5 {
+  - logRepository: OperationLogRepository
+  ..
+  + getLogs(Pageable): Page<OperationLog>
+  + log(username, op, detail, ip, success): void
+}
+
+class DataInitializer as "DataInitializer\n启动初始化" #ECFDF5 {
+  - userRepository / deptRepository
+  - employeeRepository
+  - socialSecurityRepository
+  - taxConfigRepository
+  - salaryItemRepository
+  - passwordEncoder
+  ..
+  + run(String...): void
+  - initUsers(): void
+  - initDepartments(): List
+  - initEmployees(List): void
+  - initSalaryItems(): void
+  - initSocialSecurity(): void
+  - initTaxConfig(): void
+}
+
+' === Dependency Relationships ===
+note top of SalaryCalculationService : ★ 核心业务类\n工资计算引擎
+
+' Controller calls
+DepartmentController ..> DepartmentService : calls
+EmployeeController ..> EmployeeService : calls
+SalaryItemController ..> SalaryItemService : calls
+PayrollController ..> SalaryCalculationService : calls
+PayrollController ..> ExcelService : calls
+PayslipController ..> PayslipService : calls
+ReportController ..> ReportService : calls
+
+' Service → Service dependencies
+SalaryCalculationService ..> TaxService : "个税累计预扣法" ⬅
+SalaryCalculationService ..> SocialSecurityService : "社保公积金计算" ⬅
+
+note bottom of SalaryCalculationService
+  ★ 工资计算处理流程:
+  1. 获取全部员工清单
+  2. 获取工资项定义+公式
+  3. 计算社保公积金
+  4. 计算个税
+  5. 保存工资记录
+end note
+
+@enduml

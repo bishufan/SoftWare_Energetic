@@ -1,0 +1,34 @@
+@startuml sd_ReportService_getYearlyComparison
+skinparam backgroundColor #F9FAFB
+title ReportService.getYearlyComparison(year) - 年度工资对比分析
+
+actor "调用方" as Client
+participant "ReportController" as Ctrl
+participant "ReportService" as RptSvc
+participant "DepartmentRepository" as DeptRepo
+participant "SalaryRecordRepository" as RecRepo
+
+Client -> Ctrl: GET /api/reports/yearly-comparison?year=2024
+Ctrl -> RptSvc: getYearlyComparison(year)
+RptSvc -> DeptRepo: findByActiveTrue()
+DeptRepo --> RptSvc: List<Department> (5个部门)
+note right of RptSvc #F0F8FF
+  **双重遍历:**
+  for each 部门:
+    for m = 1 to 12:
+      ym = "2024" + "01"~"12"
+      查询该部门该月记录
+      汇总应发+实发
+end note
+loop 每个部门
+  loop 1月~12月
+    RptSvc -> RecRepo: findByYearMonthAndDepartment(ym, deptId)
+    RecRepo --> RptSvc: List<SalaryRecord>
+    alt 有记录
+      RptSvc -> RptSvc: new YearlyComparisonDto(deptName, ym,\ngrossPay, netPay)
+    end
+  end
+end
+RptSvc --> Ctrl: List<YearlyComparisonDto>\n[ {部门:技术部, 月份:202401, 应发:50000, 实发:40000}, ... ]
+Ctrl --> Client: ApiResponse → JSON\n(可用于前端ECharts折线图)
+@enduml

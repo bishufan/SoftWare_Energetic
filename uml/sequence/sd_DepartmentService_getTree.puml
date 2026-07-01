@@ -1,0 +1,18 @@
+@startuml sd_DepartmentService_getTree
+skinparam backgroundColor #F9FAFB
+title DepartmentService.getTree() - 获取部门树形结构
+
+actor "调用方" as Client
+participant "DepartmentController" as Ctrl
+participant "DepartmentService" as Service
+participant "DepartmentRepository" as Repo
+participant "Department\n(实体)" as Entity
+
+Client -> Ctrl: GET /api/departments
+Ctrl -> Service: getTree()
+Service -> Repo: findByParentIsNull()
+Repo --> Service: List<Department>\n(仅顶级部门)
+Service --> Ctrl: 返回树形结果\n(懒加载子部门)
+Ctrl --> Client: ApiResponse<List<Department>>
+note right of Entity : Lazy加载 children\n自动填充子部门列表
+@enduml

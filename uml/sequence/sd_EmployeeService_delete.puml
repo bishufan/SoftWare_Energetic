@@ -1,0 +1,24 @@
+@startuml sd_EmployeeService_delete
+skinparam backgroundColor #F9FAFB
+title EmployeeService.delete(id) - 逻辑删除员工
+
+actor "调用方" as Client
+participant "EmployeeController" as Ctrl
+participant "EmployeeService" as Service
+participant "EmployeeRepository" as Repo
+
+Client -> Ctrl: DELETE /api/employees/{id}
+Ctrl -> Service: delete(id)
+Service -> Repo: findById(id)
+Repo --> Service: Employee实体
+alt 不存在
+  Service --> Ctrl: throw RuntimeException
+  Ctrl --> Client: 错误响应
+else 存在
+  Service -> Employee: setActive(false)
+  Service -> Repo: save(emp)
+  Repo --> Service: 更新后的Employee
+  Service --> Ctrl: void
+  Ctrl --> Client: ApiResponse("删除成功")
+end
+@enduml

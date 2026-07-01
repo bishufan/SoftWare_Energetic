@@ -1,0 +1,26 @@
+@startuml sd_DepartmentService_delete
+skinparam backgroundColor #F9FAFB
+title DepartmentService.delete(id) - 逻辑删除部门
+
+actor "调用方" as Client
+participant "DepartmentController" as Ctrl
+participant "DepartmentService" as Service
+participant "DepartmentRepository" as Repo
+participant "Department\n(实体)" as Entity
+
+Client -> Ctrl: DELETE /api/departments/{id}
+Ctrl -> Service: delete(id)
+Service -> Repo: findById(id)
+Repo --> Service: Department实体
+alt 部门不存在
+  Service --> Ctrl: throw RuntimeException\n("部门不存在: id")
+  Ctrl --> Client: 404/错误响应
+else 存在
+  Service -> Entity: setActive(false)
+  note right of Service : 逻辑删除\n不删除数据库记录
+  Service -> Repo: save(dept)
+  Repo --> Service: 更新后的Department
+  Service --> Ctrl: void
+  Ctrl --> Client: ApiResponse("删除成功")
+end
+@enduml

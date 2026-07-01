@@ -1,0 +1,28 @@
+@startuml
+skinparam backgroundColor #F9FAFB
+skinparam defaultFontSize 11
+class SalaryRecord as "SalaryRecord\n工资记录" #FCE7F3 {
+  - id: Long
+  - employee: Employee
+  - yearMonth: String
+  - itemValues: String
+  - grossPay: Double
+  - incomeTax: Double
+  - socialInsurance: Double
+  - housingFund: Double
+  - netPay: Double
+  - cumulativeIncome: Double
+  - cumulativeExempt: Double
+  - cumulativeDeduction: Double
+  - cumulativeTaxPaid: Double
+  - status: String
+  - processedBy: User
+  - processTime: LocalDateTime
+  - createTime: LocalDateTime
+  - updateTime: LocalDateTime
+  ..
+  + onCreate(): void
+  + onUpdate(): void
+}
+note right of SalaryRecord : PK, 表: sal_salary_record\nemployee: FK, NOT NULL\nyearMonth: yyyyMM\nstatus: DRAFT/CONFIRMED/PAID\nnetPay = grossPay-tax-insurance-fund
+@enduml

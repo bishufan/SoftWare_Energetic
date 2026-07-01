@@ -1,0 +1,102 @@
+@startuml repository_layer
+skinparam backgroundColor #F9FAFB
+skinparam defaultFontSize 11
+skinparam interface {
+  BorderThickness 2
+  FontSize 11
+}
+skinparam class {
+  BorderThickness 2
+}
+
+' === Repository Interfaces ===
+interface "DepartmentRepository\n部门仓库" as R1 #FEF3C7 {
+  + findByActiveTrue(): List<Department>
+}
+note right of R1 : extends JpaRepository\n<Department, Long>
+
+interface "EmployeeRepository\n员工仓库" as R2 #FEF3C7 {
+  + findByEmployeeNo(String): Optional<Employee>
+  + findByDepartmentId(Long): List<Employee>
+  + findByActiveTrue(): List<Employee>
+}
+note right of R2 : extends JpaRepository\n<Employee, Long>\nJpaSpecificationExecutor
+
+interface "UserRepository\n用户仓库" as R3 #FEF3C7 {
+  + findByUsername(String): Optional<User>
+  + existsByUsername(String): boolean
+}
+
+interface "SalaryItemRepository\n工资项目仓库" as R4 #FEF3C7 {
+  + findByActiveTrueOrderBySortOrder(): List<SalaryItem>
+  + findByItemTypeOrderBySortOrder(String): List<SalaryItem>
+}
+
+interface "SalaryRecordRepository\n工资记录仓库" as R5 #FEF3C7 {
+  + findByEmployeeIdAndYearMonth(id, ym): Optional<SalaryRecord>
+  + findByEmployeeIdOrderByYearMonthDesc(id): List<SalaryRecord>
+  + findByYearMonth(ym): List<SalaryRecord>
+  + findByYearMonthAndStatus(ym, status): List<SalaryRecord>
+  + findByYearMonthAndDepartment(ym, deptId): List<SalaryRecord>
+  + findDistinctYearMonths(): List<String>
+  + findByEmployeeAndYearPrefix(e, prefix): List<SalaryRecord>
+}
+note right of R5
+  @Query("SELECT r FROM SalaryRecord r
+    WHERE r.yearMonth = :ym
+    AND r.employee.department.id = :deptId")
+  findByYearMonthAndDepartment(@Param ym, @Param deptId)
+end note
+
+interface "SocialSecurityConfig\nRepository\n社保配置仓库" as R6 #FEF3C7 {
+  + findByCityAndYearAndActiveTrue(city, year): List
+  + findByYearAndActiveTrue(year): List
+  + findByCityAndActiveTrue(city): List
+}
+
+interface "TaxConfigRepository\n个税税率仓库" as R7 #FEF3C7 {
+  + findByTaxYearAndActiveTrueOrderByTaxLevel(year): List<TaxConfig>
+}
+
+interface "OperationLog\nRepository\n日志仓库" as R8 #FEF3C7 {
+  + findAllByOrderByCreateTimeDesc(pageable): Page<OperationLog>
+}
+
+' === Entity Classes (target) ===
+class Department <<entity>> #FCE7F3
+class Employee <<entity>> #FCE7F3
+class User <<entity>> #FCE7F3
+class SalaryItem <<entity>> #FCE7F3
+class SalaryRecord <<entity>> #FCE7F3
+class SocialSecurityConfig <<entity>> #FCE7F3
+class TaxConfig <<entity>> #FCE7F3
+class OperationLog <<entity>> #FCE7F3
+
+' === implements (泛化) ===
+R1 --|> Department : JpaRepository<Department, Long>
+R2 --|> Employee : JpaRepository<Employee, Long> + JpaSpecificationExecutor
+R3 --|> User : JpaRepository<User, Long>
+R4 --|> SalaryItem : JpaRepository<SalaryItem, Long>
+R5 --|> SalaryRecord : JpaRepository<SalaryRecord, Long>
+R6 --|> SocialSecurityConfig : JpaRepository<SocialSecurityConfig, Long>
+R7 --|> TaxConfig : JpaRepository<TaxConfig, Long>
+R8 --|> OperationLog : JpaRepository<OperationLog, Long>
+
+' === Service invokes Repository ===
+DepartmentService ..> R1 : calls
+EmployeeService ..> R2 : calls
+EmployeeService ..> R1 : calls
+SalaryItemService ..> R4 : calls
+SalaryCalculationService ..> R5 : calls
+SalaryCalculationService ..> R4 : calls
+SalaryCalculationService ..> R2 : calls
+SalaryCalculationService ..> R3 : calls
+TaxService ..> R7 : calls
+SocialSecurityService ..> R6 : calls
+PayslipService ..> R5 : calls
+PayslipService ..> R4 : calls
+ReportService ..> R5 : calls
+ReportService ..> R1 : calls
+OperationLogService ..> R8 : calls
+
+@enduml

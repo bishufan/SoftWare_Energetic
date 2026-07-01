@@ -1,0 +1,15 @@
+@startuml
+skinparam backgroundColor #F9FAFB
+skinparam defaultFontSize 12
+class SalaryItemController as "SalaryItemController\n工资项目控制" #EEF2FF {
+  - salaryItemService: SalaryItemService
+  ..
+  + getAll(): ApiResponse<List<SalaryItem>>
+  + getByType(type): ApiResponse<List<SalaryItem>>
+  + getById(id): ApiResponse<SalaryItem>
+  + create(item): ApiResponse<SalaryItem>
+  + update(id, item): ApiResponse<SalaryItem>
+  + delete(id): ApiResponse
+}
+note right of SalaryItemController : GET /api/salary-items  permitAll()\nPOST/PUT/DELETE: 认证用户
+@enduml

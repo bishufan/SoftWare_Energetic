@@ -21,6 +21,8 @@ public class DepartmentController {
     public ApiResponse<List<Department>> getAll() { return ApiResponse.ok(departmentService.getAll()); }
     @GetMapping("/active")
     public ApiResponse<List<Department>> getActive() { return ApiResponse.ok(departmentService.getActive()); }
+    @GetMapping("/all")
+    public ApiResponse<List<Department>> getAllFlat() { return ApiResponse.ok(departmentService.getAllFlat()); }
     @GetMapping("/{id}")
     public ApiResponse<Department> getById(@PathVariable Long id) { return ApiResponse.ok(departmentService.getById(id)); }
     @PostMapping
