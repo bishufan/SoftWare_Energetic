@@ -1,5 +1,6 @@
 package com.salary.module.org.domain;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import lombok.*;
 import java.time.LocalDate;
@@ -7,6 +8,7 @@ import java.time.LocalDateTime;
 
 @Entity @Table(name = "sys_employee")
 @Data @Builder @NoArgsConstructor @AllArgsConstructor
+@EqualsAndHashCode(exclude = {"department"})
 public class Employee {
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -22,6 +24,8 @@ public class Employee {
     private String email;
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "department_id")
+    @ToString.Exclude
+    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
     private Department department;
     @Column(length = 20)
     private String position;

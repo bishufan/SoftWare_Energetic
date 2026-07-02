@@ -1,5 +1,6 @@
 package com.salary.module.salary.calculation.domain;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.salary.module.org.domain.Employee;
 import com.salary.module.system.domain.User;
 import jakarta.persistence.*;
@@ -8,11 +9,14 @@ import java.time.LocalDateTime;
 
 @Entity @Table(name = "sal_salary_record")
 @Data @Builder @NoArgsConstructor @AllArgsConstructor
+@EqualsAndHashCode(exclude = {"employee", "processedBy"})
 public class SalaryRecord {
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "employee_id", nullable = false)
+    @ToString.Exclude
+    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
     private Employee employee;
     @Column(nullable = false, length = 6)
     private String yearMonth;
@@ -31,6 +35,8 @@ public class SalaryRecord {
     private String status; // DRAFT/CONFIRMED/PAID
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "processed_by")
+    @ToString.Exclude
+    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
     private User processedBy;
     private LocalDateTime processTime;
     @Column(updatable = false)

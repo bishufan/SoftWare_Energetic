@@ -19,6 +19,7 @@ import java.util.Map;
 public class EmployeeService {
     private final EmployeeRepository employeeRepository;
 
+    @Transactional(readOnly = true)
     public Page<Employee> search(Map<String,String> params, Pageable pageable) {
         Specification<Employee> spec = (root, query, cb) -> {
             List<Predicate> predicates = new ArrayList<>();
@@ -35,9 +36,11 @@ public class EmployeeService {
         return employeeRepository.findAll(spec, pageable);
     }
 
+    @Transactional(readOnly = true)
     public Employee getById(Long id) {
         return employeeRepository.findById(id).orElseThrow(() -> new RuntimeException("员工不存在: " + id));
     }
+    @Transactional(readOnly = true)
     public List<Employee> getActiveEmployees() { return employeeRepository.findByActiveTrue(); }
 
     @Transactional

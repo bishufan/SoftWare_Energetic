@@ -1,0 +1,87 @@
+@startuml
+!theme plain
+skinparam backgroundColor #FEFEFE
+skinparam defaultFontName Microsoft YaHei
+skinparam defaultFontSize 14
+skinparam rectangle {
+  BorderColor #2E86C1
+  BackgroundColor #D6EAF8
+  RoundCorner 8
+}
+skinparam database {
+  BorderColor #1E8449
+  BackgroundColor #D5F5E3
+  RoundCorner 8
+}
+skinparam node {
+  BorderColor #CA6F1E
+  BackgroundColor #FDEBD0
+  RoundCorner 8
+}
+skinparam frame {
+  BorderColor #7D3C98
+  BackgroundColor #E8DAEF
+  RoundCorner 8
+}
+skinparam actor {
+  BorderColor #2C3E50
+  BackgroundColor #AED6F1
+}
+skinparam arrow {
+  Color #5D6D7E
+  FontSize 12
+}
+
+title << 部署图 >> 企业薪资管理系统 - 系统部署架构
+
+actor 用户 as user
+
+node "客户端层" {
+  rectangle "Web浏览器\n(Chrome/Firefox/Edge)" as browser
+}
+
+node "应用服务器层" {
+  frame "Spring Boot 应用服务器\n(嵌入式 Tomcat)" {
+    rectangle "前端静态资源\n(SPA单页应用)" as frontend
+    rectangle "认证模块\n(Auth)" as auth_m
+    rectangle "组织架构模块\n(Org)" as org_m
+    rectangle "薪资核算模块\n(Salary)" as salary_m
+    rectangle "报表模块\n(Report)" as report_m
+    rectangle "系统管理模块\n(System)" as sys_m
+  }
+}
+
+node "数据存储层" {
+  database "H2 内存数据库\n(开发环境)" as h2_db
+  database "MySQL 关系数据库\n(生产环境)" as mysql_db
+  frame "文件存储" {
+    rectangle "Excel 导入/导出" as excel
+    rectangle "PDF 工资条" as pdf
+  }
+}
+
+user --> browser : HTTP/HTTPS 访问
+browser --> frontend : RESTful API (JSON)
+frontend --> auth_m : JWT 认证
+frontend --> org_m : 部门/员工管理
+frontend --> salary_m : 工资核算/工资条
+frontend --> report_m : 统计报表
+frontend --> sys_m : 系统配置
+
+auth_m --> h2_db : JDBC
+org_m --> h2_db : JDBC
+salary_m --> h2_db : JDBC
+report_m --> h2_db : JDBC
+sys_m --> h2_db : JDBC
+
+auth_m --> mysql_db : JDBC
+org_m --> mysql_db : JDBC
+salary_m --> mysql_db : JDBC
+report_m --> mysql_db : JDBC
+sys_m --> mysql_db : JDBC
+
+salary_m --> excel : Apache POI
+salary_m --> pdf : iText 7
+report_m --> excel : Apache POI
+
+@enduml

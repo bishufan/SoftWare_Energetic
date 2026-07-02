@@ -24,7 +24,7 @@ spring:
     hibernate:
       ddl-auto: create
     show-sql: false
-    open-in-view: false
+    open-in-view: true
     properties:
       hibernate:
         format_sql: false
